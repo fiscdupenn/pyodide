@@ -51,9 +51,16 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
+import js
 
-# Load dataset from the local CSV file
-df = pd.read_csv('/penguins.csv')
+# Use JavaScript's fetch to load the CSV file
+response = await js.fetch("/penguins.csv")
+csv_text = await response.text()
+
+# Load the dataset from the CSV text
+from io import StringIO
+df = pd.read_csv(StringIO(csv_text))
+
 sns.pairplot(df, hue="species")
 
 # Save plot to a base64 string
