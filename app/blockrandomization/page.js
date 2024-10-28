@@ -8,7 +8,6 @@ const PyodidePlot = () => {
   const [dataSrc, setDataSrc] = useState(null);
 
   useEffect(() => {
-    // Dynamically load Pyodide script
     const loadPyodideScript = async () => {
       const script = document.createElement("script");
       script.src = "https://cdn.jsdelivr.net/pyodide/v0.23.2/full/pyodide.js";
@@ -16,11 +15,13 @@ const PyodidePlot = () => {
         const pyodideInstance = await window.loadPyodide({
           indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.2/full/",
         });
-        // Ensure libraries are loaded/installed
         await pyodideInstance.loadPackage("micropip");
         await pyodideInstance.runPythonAsync(`
             import micropip
             await micropip.install('numpy')
+            await micropip.install('pandas')
+            await micropip.install('matplotlib')
+            await micropip.install('seaborn')
         `);
         setPyodide(pyodideInstance);
         setLoading(false);
@@ -37,52 +38,58 @@ const PyodidePlot = () => {
     setLoading(true);
 
     const pythonCode = `
-
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
 
-# Define the levels for each factor
-factor1_levels = [1, 2]  # Factor with 2 levels
-factor2_levels = [1, 2, 3, 4, 5, 6]  # Factor with 6 levels
+# Setting random seed for reproducibility
+np.random.seed(42)
 
-# Generate all combinations of levels for the block
-all_combinations = [(f1, f2) for f1 in factor1_levels for f2 in factor2_levels]
+# Parameters for block randomization
+num_blocks = 5  # Number of blocks
+num_groups = 2  # Number of treatment groups
+subjects_per_block = 10  # Subjects per block
 
-# Set the number of blocks you want
-num_blocks = 5
+# Generate block data with correct sampling
+data = {
+    "Block": np.repeat(range(1, num_blocks + 1), subjects_per_block),
+    "Subject": range(1, num_blocks * subjects_per_block + 1),
+    "Group": np.tile(
+        np.random.choice(range(1, num_groups + 1), num_groups, replace=False), 
+        num_blocks * (subjects_per_block // num_groups)
+    ).tolist() + np.random.choice(range(1, num_groups + 1), subjects_per_block % num_groups, replace=True).tolist()
+}
 
-# Generate randomized blocks
-randomized_blocks = []
-for _ in range(num_blocks):
-    block = np.random.permutation(all_combinations)  # Randomize order
-    randomized_blocks.extend(block)
+# Create a DataFrame
+df = pd.DataFrame(data)
 
-# Convert to DataFrame for better readability
-df = pd.DataFrame(randomized_blocks, columns=['Factor1', 'Factor2'])
+# Plotting with Seaborn
+plt.figure(figsize=(10, 6))
+sns.countplot(data=df, x="Block", hue="Group", palette="Set2")
 
-# Assign a color for each unique combination
-unique_combinations = df.drop_duplicates().reset_index(drop=True)
-colors = sns.color_palette("pastel", len(unique_combinations))
-color_map = {tuple(row): colors[i] for i, row in unique_combinations.iterrows()}
+# Customizing the plot
+plt.title("Block Randomization of Subjects into Treatment Groups")
+plt.xlabel("Block")
+plt.ylabel("Number of Subjects")
+plt.legend(title="Group")
 
-# Map colors to each row based on combination
-df_colors = df.apply(lambda row: color_map[(row['Factor1'], row['Factor2'])], axis=1)
+# Convert plot to base64 string
+buffer = BytesIO()
+plt.savefig(buffer, format='png')
+buffer.seek(0)
+img_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+buffer.close()
 
-# Display the color-coded DataFrame
-fig, ax = plt.subplots(figsize=(8, len(df) // 2))
-ax.axis('off')
-table = ax.table(cellText=df.values, colLabels=df.columns, cellColours=df_colors.values.reshape(-1, 1, 3),
-                 cellLoc='center', loc='center')
+img_base64
 
-plt.show()
     `;
 
     try {
-      // Execute the Python code
       const outData = await pyodide.runPythonAsync(pythonCode);
-      setDataSrc(outData)
+      setDataSrc(`data:image/png;base64,${outData}`);
     } catch (error) {
       console.error("Error generating data:", error);
     }
@@ -93,11 +100,11 @@ plt.show()
   return (
     <div>
       {loading && <p>Loading Pyodide...</p>}
-      {!loading && <button onClick={generateData}>Generate Data</button>}
+      {!loading && <button onClick={generateData}>Generate Plot</button>}
       {dataSrc && (
         <div>
-          <h3>Generated Data:</h3>
-          {dataSrc}
+          <h3>Generated Plot:</h3>
+          <img src={dataSrc} alt="Generated Plot" />
         </div>
       )}
     </div>
