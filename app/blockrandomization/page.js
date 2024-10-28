@@ -61,7 +61,7 @@ np.random.seed(42)
 # Parameters for block randomization
 num_blocks = 5  # Number of blocks
 num_groups = 2  # Number of treatment groups
-subjects_per_block = 20  # Subjects per block
+subjects_per_block = 10  # Subjects per block
 
 # Generate block data with correct sampling
 data = {
