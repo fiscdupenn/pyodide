@@ -6,23 +6,26 @@ const PyodidePlot = () => {
   const [pyodide, setPyodide] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dataSrc, setDataSrc] = useState(null);
+  const [plotReady, setPlotReady] = useState(false);
 
   useEffect(() => {
     const loadPyodideScript = async () => {
       const script = document.createElement("script");
       script.src = "https://cdn.jsdelivr.net/pyodide/v0.23.2/full/pyodide.js";
+      script.async = true;
       script.onload = async () => {
         const pyodideInstance = await window.loadPyodide({
           indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.2/full/",
         });
         await pyodideInstance.loadPackage("micropip");
+
+        // Load only essential packages first
         await pyodideInstance.runPythonAsync(`
-            import micropip
-            await micropip.install('numpy')
-            await micropip.install('pandas')
-            await micropip.install('matplotlib')
-            await micropip.install('seaborn')
+          import micropip
+          await micropip.install('numpy')
+          await micropip.install('pandas')
         `);
+        
         setPyodide(pyodideInstance);
         setLoading(false);
       };
@@ -36,6 +39,13 @@ const PyodidePlot = () => {
     if (!pyodide) return;
 
     setLoading(true);
+
+    // Defer heavy packages until plot generation
+    await pyodide.runPythonAsync(`
+      import micropip
+      await micropip.install('matplotlib')
+      await micropip.install('seaborn')
+    `);
 
     const pythonCode = `
 import pandas as pd
@@ -51,7 +61,7 @@ np.random.seed(42)
 # Parameters for block randomization
 num_blocks = 5  # Number of blocks
 num_groups = 2  # Number of treatment groups
-subjects_per_block = 10  # Subjects per block
+subjects_per_block = 20  # Subjects per block
 
 # Generate block data with correct sampling
 data = {
@@ -84,12 +94,12 @@ img_base64 = base64.b64encode(buffer.read()).decode('utf-8')
 buffer.close()
 
 img_base64
-
     `;
 
     try {
       const outData = await pyodide.runPythonAsync(pythonCode);
       setDataSrc(`data:image/png;base64,${outData}`);
+      setPlotReady(true);
     } catch (error) {
       console.error("Error generating data:", error);
     }
@@ -100,7 +110,7 @@ img_base64
   return (
     <div>
       {loading && <p>Loading Pyodide...</p>}
-      {!loading && <button onClick={generateData}>Generate Plot</button>}
+      {!loading && !plotReady && <button onClick={generateData}>Generate Plot</button>}
       {dataSrc && (
         <div>
           <h3>Generated Plot:</h3>
