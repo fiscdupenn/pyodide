@@ -32,7 +32,10 @@ plt.title("Seaborn Regression Plot")
 plt.xlabel("X values")
 plt.ylabel("Y values")
 
+#
 # Save plot to a base64 string
+# The below code is needed to show Plot on this webpage
+#
 buf = io.BytesIO()
 plt.savefig(buf, format='png')
 buf.seek(0)
@@ -99,8 +102,8 @@ img_str
           <textarea
             value={pythonCode}
             onChange={(e) => setPythonCode(e.target.value)}
-            rows={30}
-            cols={95}
+            rows={35}
+            cols={85}
           />
           <br></br>
           <button onClick={generateData} disabled={dataLoading}>
