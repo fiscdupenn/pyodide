@@ -13,8 +13,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import io
-import base64
 
 # Create synthetic data
 np.random.seed(0)
@@ -36,6 +34,8 @@ plt.ylabel("Y values")
 # Save plot to a base64 string
 # The below code is needed to show plot on this webpage
 #
+import io
+import base64
 buf = io.BytesIO()
 plt.savefig(buf, format='png')
 buf.seek(0)

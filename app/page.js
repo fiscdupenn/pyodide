@@ -13,8 +13,6 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from io import BytesIO
-import base64
-import js
 
 # Use JavaScript's fetch to load the CSV file
 response = await js.fetch("/penguins.csv")
@@ -30,6 +28,8 @@ sns.pairplot(df, hue="species")
 # Save plot to a base64 string
 # The below code is needed to show plot on this webpage
 #
+import base64
+import js
 buffer = BytesIO()
 plt.savefig(buffer, format='png')
 buffer.seek(0)
