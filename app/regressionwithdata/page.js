@@ -13,6 +13,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import io
+import base64
 
 # Create synthetic data
 np.random.seed(0)
@@ -29,7 +31,13 @@ sns.regplot(x='x', y='y', data=data)
 plt.title("Seaborn Regression Plot")
 plt.xlabel("X values")
 plt.ylabel("Y values")
-plt.show()
+
+# Save plot to a base64 string
+buf = io.BytesIO()
+plt.savefig(buf, format='png')
+buf.seek(0)
+img_str = base64.b64encode(buf.read()).decode('utf-8')
+img_str
   `);
 
   const pyodideRef = useRef(null);
@@ -61,54 +69,18 @@ plt.show()
 
   const generateData = async () => {
     if (!pyodideRef.current) return;
-  
+
     setDataLoading(true);
-  
+
     await pyodideRef.current.runPythonAsync(`
       import micropip
       await micropip.install('matplotlib')
       await micropip.install('seaborn')
-      await micropip.install('io')
-      await micropip.install('base64')
     `);
-  
+
     try {
-      const modifiedPythonCode = `
-  import numpy as np
-  import pandas as pd
-  import seaborn as sns
-  import matplotlib.pyplot as plt
-  import io
-  import base64
-  
-  # Create synthetic data
-  np.random.seed(0)
-  data_size = 100
-  x = np.random.rand(data_size) * 10  # Random numbers between 0 and 10
-  y = 2.5 * x + np.random.randn(data_size) * 5  # Linear relationship with some noise
-  
-  # Create a DataFrame
-  data = pd.DataFrame({'x': x, 'y': y})
-  
-  # Plot with Seaborn
-  plt.figure(figsize=(10, 6))
-  sns.regplot(x='x', y='y', data=data)
-  plt.title("Seaborn Regression Plot")
-  plt.xlabel("X values")
-  plt.ylabel("Y values")
-  
-  # Save plot to a bytes buffer
-  buffer = io.BytesIO()
-  plt.savefig(buffer, format="png")
-  buffer.seek(0)
-  
-  # Encode to base64
-  img_str = "data:image/png;base64," + base64.b64encode(buffer.read()).decode("utf-8")
-  img_str
-      `;
-  
-      const outData = await pyodideRef.current.runPythonAsync(modifiedPythonCode);
-      setDataSrc(outData); // Directly set the base64 string as src
+      const outData = await pyodideRef.current.runPythonAsync(pythonCode);
+      setDataSrc(`data:image/png;base64,${outData}`);
       setPlotReady(true);
     } catch (error) {
       console.error("Error generating data:", error);
@@ -116,11 +88,10 @@ plt.show()
       setDataLoading(false);
     }
   };
-  
 
   return (
     <div>
-      <h1>Pyodide - Run Python Code in a JavaScript Webpage</h1>
+      <h1>Pyodide - Run Python Code in a Next.js Webpage</h1>
       <h2>This webpage generates a plot written in Python using matplotlib and seaborn.</h2>
       {pyodideLoading && !plotReady && <p>Loading Pyodide...</p>}
       {!pyodideLoading && (
@@ -129,11 +100,11 @@ plt.show()
             value={pythonCode}
             onChange={(e) => setPythonCode(e.target.value)}
             rows={30}
-            cols={80}
+            cols={95}
           />
           <br></br>
           <button onClick={generateData} disabled={dataLoading}>
-            {dataLoading ? "Generating Data..." : "Generate Data"}
+            {dataLoading ? "Generating Plot..." : "Generate Plot"}
           </button>
         </>
       )}
