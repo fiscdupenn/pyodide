@@ -101,7 +101,7 @@ img_str
           <textarea
             value={pythonCode}
             onChange={(e) => setPythonCode(e.target.value)}
-            rows={36}
+            rows={35}
             cols={85}
           />
           <br></br>
