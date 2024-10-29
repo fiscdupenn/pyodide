@@ -28,7 +28,7 @@ sns.pairplot(df, hue="species")
 
 #
 # Save plot to a base64 string
-# The below code is needed to show Plot on this webpage
+# The below code is needed to show plot on this webpage
 #
 buffer = BytesIO()
 plt.savefig(buffer, format='png')
@@ -88,9 +88,9 @@ encoded_image
 
   return (
     <div>
-      <h1>Pyodide - Run Python Code in a JavaScript Webpage</h1>
-      <h2>This webpage generates a plot written in Python using matplotlib and seaborn.</h2>
-      <h2>Data used is a .csv file on the webserver.</h2>
+      <h1>This webpage generates a plot written in Python using matplotlib and seaborn.</h1>
+      <h2>penguins.csv resides on the webserver with the following columns: </h2> 
+      <h3>species, island, bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g, sex</h3>
       {pyodideLoading && !plotReady && <p>Loading Pyodide...</p>}
       {!pyodideLoading && (
         <>

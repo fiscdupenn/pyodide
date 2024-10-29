@@ -34,7 +34,7 @@ plt.ylabel("Y values")
 
 #
 # Save plot to a base64 string
-# The below code is needed to show Plot on this webpage
+# The below code is needed to show plot on this webpage
 #
 buf = io.BytesIO()
 plt.savefig(buf, format='png')
@@ -94,8 +94,7 @@ img_str
 
   return (
     <div>
-      <h1>Pyodide - Run Python Code in a Next.js Webpage</h1>
-      <h2>This webpage generates a plot written in Python using matplotlib and seaborn.</h2>
+      <h1>This webpage generates a plot written in Python using matplotlib and seaborn.</h1>
       {pyodideLoading && !plotReady && <p>Loading Pyodide...</p>}
       {!pyodideLoading && (
         <>
