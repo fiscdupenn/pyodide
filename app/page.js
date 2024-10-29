@@ -102,7 +102,7 @@ encoded_image
           />
           <br></br>
           <button onClick={generateData} disabled={dataLoading}>
-            {dataLoading ? "Generating Data..." : "Generate Data"}
+            {dataLoading ? "Generating Plot..." : "Generate Plot"}
           </button>
         </>
       )}
