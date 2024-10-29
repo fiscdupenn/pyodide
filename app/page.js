@@ -86,7 +86,7 @@ encoded_image
   return (
     <div>
       <h1>Pyodide - Run Python Code in a JavaScript Webpage</h1>
-      <h2>This webpage generates a plot using matplotlib and seaborn.</h2>
+      <h2>This webpage generates a plot written in Python using matplotlib and seaborn.</h2>
       {pyodideLoading && !plotReady && <p>Loading Pyodide...</p>}
       {!pyodideLoading && (
         <>
